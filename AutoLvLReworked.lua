@@ -5,7 +5,7 @@ local __autoLevel__OnTick
 local rOFF=0
 --update func--
 local version = "1.0"
-local AUTOUPDATE = false
+local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/CooLowbro/BoL/master/AutoLvLReworked.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -205,7 +205,6 @@ function OnLoad()
 	
 	RLoad()
 	print("<b><font color=\"#FF0000\">Tyler1 Auto Level Spells</font></b><b><font color=\"#33EE33\"> Reworked by CooLow:</font></b> <font color=\"#FFFFFF\">Sucessfully Loaded..!</font>")
-	print("<b><font color=\"#FF0000\">!!! THIS IS SCRIPT DOESNT AUTO UPDATE, ALWAYS CHECK THE FORUM !!!"</font></b>)
 end
 
 _G.LevelSpell = function(id)
