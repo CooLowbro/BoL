@@ -7,7 +7,7 @@ local rOFF=0
 local version = "2.21"
 local AUTOUPDATE = false
 local UPDATE_HOST = "raw.github.com"
-local UPDATE_PATH = "/prado1506/Bol1/master/AutoLevelSkillTyler1.lua".."?rand="..math.random(1,10000)
+local UPDATE_PATH = "/CooLowbro/BoL/master/AutoLvLReworked.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 
@@ -16,7 +16,7 @@ print("<b><font color=\"#FF0000\">Tyler1 Auto Level Spells</font></b><b><font co
 end
 
 if AUTOUPDATE then
-	local ServerData = GetWebResult(UPDATE_HOST, "/prado1506/Bol1/master/AutoLevelSkillTyler1.version")
+	local ServerData = GetWebResult(UPDATE_HOST, "/CooLowbro/BoL/master/AutoLvLReworked.version")
 	if ServerData then
 		ServerVersion = type(tonumber(ServerData)) == "number" and tonumber(ServerData) or nil
 		if ServerVersion then
