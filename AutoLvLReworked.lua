@@ -4,7 +4,7 @@ local _autoLevel = { spellsSlots = { SPELL_1, SPELL_2, SPELL_3, SPELL_4 }, level
 local __autoLevel__OnTick
 local rOFF=0
 --update func--
-local version = "1.0"
+local version = "1.01"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/CooLowbro/BoL/master/AutoLvLReworked.lua".."?rand="..math.random(1,10000)
@@ -208,22 +208,23 @@ function OnLoad()
 end
 
 _G.LevelSpell = function(id)
-   local offsets = {
-   [_Q] = 0x85,
-   [_W] = 0x45,
-   [_E] = 0x15,
-   [_R] = 0xC5,
-   }
-   local p
-   p = CLoLPacket(0x130)
-   p.vTable = 0xEDB360
-   p:EncodeF(myHero.networkID)
-   for i = 1, 4 do p:Encode1(0x55) end
-   for i = 1, 4 do p:Encode1(0x74) end
-   p:Encode1(offsets[id])
-   p:Encode1(0xB3)
-   for i = 1, 4 do p:Encode1(0x4F) end
-   p:Encode1(0x01)
-   for i = 1, 3 do p:Encode1(0x00) end
-   SendPacket(p)
+  local offsets = { 
+    [_Q] = 0xB8,
+    [_W] = 0xBA,
+    [_E] = 0x79,
+    [_R] = 0x7B,
+  }
+  local p = CLoLPacket(0x0050)
+  p.vTable = 0xF38DAC
+  p:EncodeF(myHero.networkID)
+  p:Encode1(offsets[id])
+  p:Encode1(0x3C)
+  for i = 1, 4 do p:Encode1(0xF6) end
+  for i = 1, 4 do p:Encode1(0x5E) end
+  for i = 1, 4 do p:Encode1(0xE0) end
+  p:Encode1(0x24)
+  p:Encode1(0xF1)
+  p:Encode1(0x27)
+  p:Encode1(0x00)
+  SendPacket(p)
 end
