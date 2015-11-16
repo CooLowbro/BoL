@@ -195,7 +195,7 @@ end
 
 function OnLoad()
 	if tonumber(version) == ServerVersion then
-	print("<b><font color=\"#FF0000\">Tyler1 Auto Level Spells</font></b><b><font color=\"#33EE33\"> Reworked by CooLow:</font></b> <font color=\"#FFFFFF\">Loading...</font>"..version)
+	print("<b><font color=\"#FF0000\">Tyler1 Auto Level Spells</font></b><b><font color=\"#33EE33\"> Reworked by CooLow:</font></b> <font color=\"#FFFFFF\">Loading v</font>"..version)
 	Menu = scriptConfig("["..myHero.charName.." - AutoLevel]", player.charName.."AutoLevel")
 	Menu:addParam("sep1", "1 - Change for Humanizer "..myHero.charName, SCRIPT_PARAM_INFO, "")
 	Menu:addParam("DelayTime", "Humanizer Time", SCRIPT_PARAM_SLICE, 1, 1, 60, 0)
@@ -207,7 +207,7 @@ function OnLoad()
 	Menu:addParam("sep4", "Version Info: ", SCRIPT_PARAM_INFO, version)
 	
 	RLoad()
-	print("<b><font color=\"#FF0000\">Tyler1 Auto Level Spells</font></b><b><font color=\"#33EE33\"> Reworked by CooLow:</font></b> <font color=\"#FFFFFF\">Sucessfully Loaded..!</font>")
+	print("<b><font color=\"#FF0000\">Tyler1 Auto Level Spells</font></b><b><font color=\"#33EE33\"> Reworked by CooLow:</font></b> <font color=\"#FFFFFF\">Sucessfully Loaded!</font>")
 end end
 
 _G.LevelSpell = function(id)
