@@ -4,7 +4,7 @@ local _autoLevel = { spellsSlots = { SPELL_1, SPELL_2, SPELL_3, SPELL_4 }, level
 local __autoLevel__OnTick
 local rOFF=0
 --update func--
-local version = "1.01"
+local version = "1.02"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/CooLowbro/BoL/master/AutoLvLReworked.lua".."?rand="..math.random(1,10000)
@@ -36,10 +36,12 @@ end
 
 
 function OnTick()
+	if tonumber(version) == ServerVersion then
 		Start()
 		if ini then
 			AutoLevel()
 		end
+	end
 end
 
 function Start()
@@ -192,6 +194,7 @@ function RLoad()
 end
 
 function OnLoad()
+	if tonumber(version) == ServerVersion then
 	print("<b><font color=\"#FF0000\">Tyler1 Auto Level Spells</font></b><b><font color=\"#33EE33\"> Reworked by CooLow:</font></b> <font color=\"#FFFFFF\">Loading...</font>"..version)
 	Menu = scriptConfig("["..myHero.charName.." - AutoLevel]", player.charName.."AutoLevel")
 	Menu:addParam("sep1", "1 - Change for Humanizer "..myHero.charName, SCRIPT_PARAM_INFO, "")
@@ -205,7 +208,7 @@ function OnLoad()
 	
 	RLoad()
 	print("<b><font color=\"#FF0000\">Tyler1 Auto Level Spells</font></b><b><font color=\"#33EE33\"> Reworked by CooLow:</font></b> <font color=\"#FFFFFF\">Sucessfully Loaded..!</font>")
-end
+end end
 
 _G.LevelSpell = function(id)
   local offsets = { 
