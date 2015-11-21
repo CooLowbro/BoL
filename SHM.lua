@@ -24,7 +24,7 @@
 --]]
 -- Those stuff to be called on the whole script
 local myHero = GetMyHero()
-local version = "1.1"
+local version = "1.01"
 local obw_URL = "https://raw.githubusercontent.com/Superx321/BoL/master/common/SxOrbWalk.lua"
 local Vpred_URL = "https://raw.githubusercontent.com/SidaBoL/Scripts/master/Common/VPrediction.lua"
 local Dpred_PATH = LIB_PATH.."DivinePred.lua"
