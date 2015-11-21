@@ -362,10 +362,10 @@ function FightMode()
 end
 function HarassMode()
   if HarassKey() then
-    if themenu.combomodepref.useqharass then
+    if themenu.harassmodepref.useqharass then
       CastQ()
     end  
-    if themenu.combomodepref.useeharass then
+    if themenu.harassmodepref.useeharass then
       CastE()
     end
   end
