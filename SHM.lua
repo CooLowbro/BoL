@@ -9,16 +9,33 @@
                                                                          
                                                                          
 --]]
-
+--[[
+              TO DO LIST
+            • Packets for VIP           [?]
+            • Auto Level                [ ]
+            • Auto Updater              [X]
+            • Lag-Free Circles          [X]
+            • Summoner Spells support   [ ]
+            • Dont Heal under recall    [ ]
+            • Lane-Clear UseQ           [ ]
+            • Item usage                [ ]
+            • Ward assistant            [ ]
+            • KS                        [ ]
+--]]
 -- Those stuff to be called on the whole script
 local myHero = GetMyHero()
-local version = "1.0"
+local version = "1.1"
 local obw_URL = "https://raw.githubusercontent.com/Superx321/BoL/master/common/SxOrbWalk.lua"
 local Vpred_URL = "https://raw.githubusercontent.com/SidaBoL/Scripts/master/Common/VPrediction.lua"
 local Dpred_PATH = LIB_PATH.."DivinePred.lua"
 local obw_PATH = LIB_PATH.."SxOrbwalk.lua"
 local Vpred_PATH = LIB_PATH.."VPrediction.lua"
 local ts = TargetSelector(TARGET_LESS_CAST_PRIORITY, 1200)
+local AUTOUPDATE = true
+local UPDATE_HOST = "raw.github.com"
+local UPDATE_PATH = "/CooLowbro/BoL/master/SHM.lua".."?rand="..math.random(1,10000)
+local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
+local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 local Skills = {
     
   SkillQ = {name = myHero:GetSpellData(_Q).name, range = 970, delay = 0.5, speed = 1500, width = 110},
@@ -31,11 +48,35 @@ local Skills = {
 }
 -- Those stuff to be called on the whole script
 
+--Auto Updater
+function _AutoupdaterMsg(msg) 
+print("<b><font color=\"#FF0000\">Soraka The Healer Machine:</font></b> <font color=\"#FFFFFF\">"..msg.."</font>") 
+end
+if AUTOUPDATE then
+  local ServerData = GetWebResult(UPDATE_HOST, "/CooLowbro/BoL/master/SHM.version")
+  if ServerData then
+    ServerVersion = type(tonumber(ServerData)) == "number" and tonumber(ServerData) or nil
+    if ServerVersion then
+      if tonumber(version) < ServerVersion then
+        _AutoupdaterMsg("New version available "..ServerVersion)
+        _AutoupdaterMsg("Updating, please don't press F9")
+        DelayAction(function() DownloadFile(UPDATE_URL, UPDATE_FILE_PATH, function () _AutoupdaterMsg("Successfully updated. ("..version.." => "..ServerVersion.."), press F9 twice to load the updated version.") end) end, 3)
+      else
+        _AutoupdaterMsg("You have got the latest version ("..ServerVersion..")")
+      end
+    end
+  else
+    _AutoupdaterMsg("Error downloading version info")
+  end
+end
+--Auto Updater
+
 -- Load one time only
 function OnLoad()
-  if myHero.charName == "Soraka" and FileExist(obw_PATH) then
+  if myHero.charName == "Soraka" and tonumber(version) == ServerVersion then
     print("<b><font color=\"#FF0000\">Soraka The Healer Machine v"..version.." loaded!</b></font>")
     OpenMenu()
+		initCLF()
     LoadPred()
     Orbwalker()
     return
@@ -49,8 +90,9 @@ end
 
 -- Loop 100x/s
 function OnTick()
-  if predwillwork == true and obwwillwork == true then
+  if predwillwork == true and obwwillwork == true and tonumber(version) == ServerVersion  then
   Target = GetTarget()
+	ckCLF()
   QREADY = (myHero:CanUseSpell(_Q) == READY)
   WREADY = (myHero:CanUseSpell(_W) == READY)
   EREADY = (myHero:CanUseSpell(_E) == READY)
@@ -64,22 +106,59 @@ function OnTick()
 end
 -- Loop 100x/s
 
+-- Lag free circles (by barasia, vadash and viseversa)
+function initCLF()
+  _G.oldDrawCircle = rawget(_G, 'DrawCircle')
+  _G.DrawCircle = DrawCircle2
+end
+function ckCLF()
+  if not themenu.draws.LFC.LagFree then _G.DrawCircle = _G.oldDrawCircle end
+  if themenu.draws.LFC.LagFree then
+    _G.DrawCircle = DrawCircle2
+  end
+end
+function DrawCircleNextLvl(x, y, z, radius, width, color, chordlength)
+    radius = radius or 300
+  quality = math.max(8,round(180/math.deg((math.asin((chordlength/(2*radius)))))))
+  quality = 2 * math.pi / quality
+  radius = radius*.92
+    local points = {}
+    for theta = 0, 2 * math.pi + quality, quality do
+        local c = WorldToScreen(D3DXVECTOR3(x + radius * math.cos(theta), y, z - radius * math.sin(theta)))
+        points[#points + 1] = D3DXVECTOR2(c.x, c.y)
+    end
+    DrawLines2(points, width or 1, color or 4294967295)
+end
+function round(num) 
+ if num >= 0 then return math.floor(num+.5) else return math.ceil(num-.5) end
+end
+function DrawCircle2(x, y, z, radius, color)
+    local vPos1 = Vector(x, y, z)
+    local vPos2 = Vector(cameraPos.x, cameraPos.y, cameraPos.z)
+    local tPos = vPos1 - (vPos1 - vPos2):normalized() * radius
+    local sPos = WorldToScreen(D3DXVECTOR3(tPos.x, tPos.y, tPos.z))
+    if OnScreen({ x = sPos.x, y = sPos.y }, { x = sPos.x, y = sPos.y }) then
+        DrawCircleNextLvl(x, y, z, radius, 1, color, themenu.draws.LFC.CL) 
+    end
+end
+-- Lag free circles (by barasia, vadash and viseversa)
+
 --Draw spells range
 function OnDraw()
-  if predwillwork == true and obwwillwork == true then
+  if predwillwork == true and obwwillwork == true and tonumber(version) == ServerVersion then
     -- Draw Q
     if themenu.draws.qdraw and not myHero.dead and QREADY then
-      DrawCircle(myHero.x, myHero.y, myHero.z, Skills.SkillQ.range, 0xFF0000)
+      DrawCircle(myHero.x, myHero.y, myHero.z, Skills.SkillQ.range, ARGB(255,255,0,0))
     end
   
     --Draw W
     if themenu.draws.wdraw and not myHero.dead and WREADY then
-      DrawCircle(myHero.x, myHero.y, myHero.z, Skills.SkillW.range, 0x33CC33)
+      DrawCircle(myHero.x, myHero.y, myHero.z, Skills.SkillW.range, ARGB(255,102,204,0))
     end
   
     -- Draw E
     if themenu.draws.edraw and not myHero.dead and EREADY then
-      DrawCircle(myHero.x, myHero.y, myHero.z, Skills.SkillE.range, 0xFF0000)
+      DrawCircle(myHero.x, myHero.y, myHero.z, Skills.SkillE.range, ARGB(255,255,0,0))
     end
   end
 end
@@ -130,14 +209,22 @@ if QREADY and ValidTarget(Target) then
   if themenu.predtouse == 1 then
     local CastPosition, HitChance, Enemies = VP:GetCircularAOECastPosition(Target, Skills.SkillQ.delay, Skills.SkillQ.width, Skills.SkillQ.range, Skills.SkillQ.speed, myHero)
     if HitChance >= 2 and Enemies >= 1 then
-      CastSpell(_Q, CastPosition.x, CastPosition.z)
+        --if VIP_USER and themenu.ads.packets then
+          --Packet("S_CAST", {spellId = _Q, toX = CastPosition.x, toY = CastPosition.z , fromX = CastPosition.x , fromY = CastPosition.z }):send()
+       -- else
+          CastSpell(_Q, CastPosition.x, CastPosition.z)
+        --end
     end    
   elseif themenu.predtouse == 2 then
     local CircleSS = CircleSS(Skills.SkillQ.speed, Skills.SkillQ.range, Skills.SkillQ.width, (Skills.SkillQ.delay * 1000), math.ruge, 1)
     local ssq = DP:bindSS(myHero:GetSpellData(_Q).name.." ", CircleSS, 75)
     local status, hitPos, perc = DP:predict(myHero:GetSpellData(_Q).name.." ", Target)
     if status == SkillShot.STATUS.SUCCESS_HIT then
-      CastSpell(_Q, hitPos.x, hitPos.z)
+      --if VIP_USER and themenu.ads.packets then
+       -- Packet("S_CAST", {spellId = _Q, toX = hitPos.x, toY = hitPos.z , fromX = hitPos.x , fromY = hitPos.z }):send()
+      --else
+        CastSpell(_Q, hitPos.x, hitPos.z)
+     -- end
     end
   end
 end
@@ -147,14 +234,22 @@ if EREADY and ValidTarget(Target) then
   if themenu.predtouse == 1 then
     local CastPosition, HitChance, Enemies = VP:GetCircularAOECastPosition(Target, Skills.SkillE.delay, Skills.SkillE.width, Skills.SkillE.range, Skills.SkillE.speed, myHero)
     if HitChance >= 2 and Enemies >= 1 then
-      CastSpell(_E, CastPosition.x, CastPosition.z)
+      --if VIP_USER and themenu.ads.packets then
+        --  Packet("S_CAST", {spellId = _E, toX = CastPosition.x, toY = CastPosition.z , fromX = CastPosition.x , fromY = CastPosition.z }):send()
+       -- else
+          CastSpell(_E, CastPosition.x, CastPosition.z)
+      --  end
     end    
   elseif themenu.predtouse == 2 then
     local CircleSS = CircleSS(Skills.SkillE.speed, Skills.SkillE.range, Skills.SkillE.width, (Skills.SkillE.delay * 1000), math.ruge, 1)
     local ssq = DP:bindSS(myHero:GetSpellData(_E).name.." ", CircleSS, 75)
     local status, hitPos, perc = DP:predict(myHero:GetSpellData(_E).name.." ", Target)
     if status == SkillShot.STATUS.SUCCESS_HIT then
-      CastSpell(_E, hitPos.x, hitPos.z)
+      --if VIP_USER and themenu.ads.packets then
+       -- Packet("S_CAST", {spellId = _E, toX = hitPos.x, toY = hitPos.z , fromX = hitPos.x , fromY = hitPos.z }):send()
+     -- else
+        CastSpell(_E, hitPos.x, hitPos.z)
+      --end
     end
   end
 end
@@ -287,7 +382,11 @@ function HealAlly()
     if WREADY and not InFountain() and themenu.heal1[ally.charName] then
       if (ally.health / ally.maxHealth < themenu.heal1[ally.charName.."2"] /100) and (myHero.health / myHero.maxHealth > themenu.heal1.sorakashp /100) then
         if GetDistance(ally, myHero) <= Skills.SkillW.range then
-          CastSpell(_W, ally)
+         -- if VIP_USER and themenu.ads.packets then
+          --  Packet("S_CAST", {spellId = _W, targetNetworkId = ally.networkID}):send()
+          --else
+            CastSpell(_W, ally)
+          --end
         end
       end
     end
@@ -297,7 +396,11 @@ function UltAlly()
   for _, ally in ipairs(GetAllyHeroes()) do  
     if RREADY and themenu.heal2[ally.charName] then
       if (ally.health / ally.maxHealth < themenu.heal2[ally.charName.."2"] /100) then
-        CastSpell(_R)
+          --if VIP_USER and themenu.ads.packets then
+          --  Packet("S_CAST", {spellId = _R, targetNetworkId = ally.networkID}):send()
+          --else
+            CastSpell(_R, ally)
+          --end
       end
     end
   end
@@ -305,7 +408,11 @@ end
 function UltSelf()
   if RREADY and themenu.heal2.selfult then
     if (myHero.health / myHero.maxHealth < themenu.heal2.selfult2 /100) then
-      CastSpell(_R)
+      --if VIP_USER and themenu.ads.packets then
+      --  Packet("S_CAST", {spellId = _R, targetNetworkId = myHero.networkID}):send()
+      --else
+        CastSpell(_R)
+      --end
     end
   end
 end
@@ -357,7 +464,7 @@ function OpenMenu()
   
   -- Lane Clear Preferences
   themenu:addSubMenu("Lane Clear","laneclearpref")
-  themenu.laneclearpref:addParam("useqcombo", "Use Q", SCRIPT_PARAM_ONOFF, true)
+  --themenu.laneclearpref:addParam("useqcombo", "Use Q", SCRIPT_PARAM_ONOFF, true)
   
   -- Heal W
   themenu:addSubMenu("Heal W","heal1") 
@@ -383,10 +490,23 @@ function OpenMenu()
   
   -- Draws
   themenu:addSubMenu("Draws","draws")
+  themenu.draws:addSubMenu("Lag-Free Circles", "LFC")
+  themenu.draws.LFC:addParam("LagFree", "Activate Lag Free Circles", 1, true)
+  themenu.draws.LFC:addParam("CL", "Length before snapping", 4, 300, 75, 2000, 0)
+  themenu.draws.LFC:addParam("CLinfo", "The lower your length the better system you need", 5, "")
+  themenu.draws.LFC:addParam("credits", "Lag free circles (by barasia, vadash and viseversa)", SCRIPT_PARAM_INFO, "")
   themenu.draws:addParam("qdraw", "(Q) Starcall ON/OFF", SCRIPT_PARAM_ONOFF, true)
   themenu.draws:addParam("wdraw", "(W) Astral Infusion ON/OFF", SCRIPT_PARAM_ONOFF, false)
   themenu.draws:addParam("edraw", "(E) Equinox ON/OFF", SCRIPT_PARAM_ONOFF, true)
   
+  --Others info
+  --themenu:addSubMenu("Additional Settings", "ads")
+  --if VIP_USER then
+  --themenu.ads:addParam("packets", "Spell Packet Usage", SCRIPT_PARAM_ONOFF, true)
+  --else
+  --themenu:addParam("packets", "Packets usage are only for VIP Members!!", SCRIPT_PARAM_INFO, "")
+  --end
+    
   -- Orbwalker
   themenu:addSubMenu("Orbwalker","obwc")
 
