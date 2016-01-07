@@ -23,7 +23,7 @@
 --]]
 -- Those stuff to be called on the whole script
 local myHero = GetMyHero()
-local version = "1.03"
+local version = "1.04"
 local obw_URL = "https://raw.githubusercontent.com/Superx321/BoL/master/common/SxOrbWalk.lua"
 local Vpred_URL = "https://raw.githubusercontent.com/SidaBoL/Scripts/master/Common/VPrediction.lua"
 local Dpred_PATH = LIB_PATH.."DivinePred.lua"
@@ -508,19 +508,19 @@ function autoLevelcustom(sequence1, sequence2)
 end
 _G.LevelSpell = function(id)
   local offsets = { 
-    [_Q] = 0x61,
-    [_W] = 0x81,
-    [_E] = 0xA1,
-    [_R] = 0xC1,
+    [_Q] = 0x1E,
+    [_W] = 0xD3,
+    [_E] = 0x3A,
+    [_R] = 0xA8,
   }
-  local p = CLoLPacket(0x0033)
-  p.vTable = 0xE556E8
+  local p = CLoLPacket(0x00B6)
+  p.vTable = 0xFE3124
   p:EncodeF(myHero.networkID)
-  p:Encode1(0x73)
-  for i = 1, 4 do p:Encode1(0xF9) end
-  for i = 1, 4 do p:Encode1(0x1E) end
+  p:Encode1(0xC1)
   p:Encode1(offsets[id])
-  for i = 1, 4 do p:Encode1(0x99) end
+  for i = 1, 4 do p:Encode1(0x63) end
+  for i = 1, 4 do p:Encode1(0xC5) end
+  for i = 1, 4 do p:Encode1(0x6A) end
   for i = 1, 4 do p:Encode1(0x00) end
   SendPacket(p)
 end
