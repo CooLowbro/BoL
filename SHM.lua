@@ -20,15 +20,15 @@
             • Ward assistant            [ ]
             • KS                        [ ]
             • Mana Management           [X]
+            • UPL                       [X]
 --]]
 -- Those stuff to be called on the whole script
 local myHero = GetMyHero()
-local version = "1.04"
+local version = "2.00"
 local obw_URL = "https://raw.githubusercontent.com/Superx321/BoL/master/common/SxOrbWalk.lua"
-local Vpred_URL = "https://raw.githubusercontent.com/SidaBoL/Scripts/master/Common/VPrediction.lua"
-local Dpred_PATH = LIB_PATH.."DivinePred.lua"
+local UPL_URL = "https://raw.github.com/nebelwolfi/BoL/master/Common/UPL.lua"
 local obw_PATH = LIB_PATH.."SxOrbwalk.lua"
-local Vpred_PATH = LIB_PATH.."VPrediction.lua"
+local UPL_PATH = LIB_PATH.."UPL.lua"
 local ts = TargetSelector(TARGET_LESS_CAST_PRIORITY, 1200)
 local enemyMinions = minionManager(MINION_ENEMY, 600, player, MINION_SORT_HEALTH_ASC)
 local AUTOUPDATE = true
@@ -38,11 +38,11 @@ local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 local Skills = {
     
-  SkillQ = {name = myHero:GetSpellData(_Q).name, range = 970, delay = 0.5, speed = 1500, width = 110},
+  SkillQ = {name = myHero:GetSpellData(_Q).name, range = 970, delay = 0.5, speed = 1500, width = 110, type = "circular"},
   
   SkillW = {name = myHero:GetSpellData(_W).name, range = 550, delay = 0.5, speed = 1000, width = 0},
   
-  SkillE = {name = myHero:GetSpellData(_E).name, range = 925, delay = 0.5, speed = 2000, width = 25},
+  SkillE = {name = myHero:GetSpellData(_E).name, range = 925, delay = 0.5, speed = 2000, width = 25, type = "circular"},
   
   SkillR = {name = myHero:GetSpellData(_R).name, delay = 0.5}
 }
@@ -75,10 +75,11 @@ end
 function OnLoad()
   if myHero.charName == "Soraka" and tonumber(version) == ServerVersion then
     print("<b><font color=\"#FF0000\">Soraka The Healer Machine v"..version.." loaded!</b></font>")
+    LoadPred()
     OpenMenu()
     initCLF()
-    LoadPred()
     Orbwalker()
+    SkillData()
     return
   elseif myHero.charName ~= "Soraka" then
     print("<b><font color=\"#FF0000\">Sorry, this script is not supported for this champion!</b></font>")
@@ -178,81 +179,47 @@ function GetTarget()
 end
 -- Target Selector
 
+-- Skill Data
+function SkillData()
+  UPL:AddSpell(_Q, { speed = Skills.SkillQ.speed, delay = Skills.SkillQ.delay, range = Skills.SkillQ.range, width = Skills.SkillQ.width, collision = false, aoe = true, type = Skills.SkillQ.type })
+  UPL:AddSpell(_W, { speed = Skills.SkillW.speed, delay = Skills.SkillW.delay, range = Skills.SkillW.range, width = Skills.SkillW.width, collision = false, aoe = false })
+  UPL:AddSpell(_E, { speed = Skills.SkillE.speed, delay = Skills.SkillE.delay, range = Skills.SkillE.range, width = Skills.SkillE.width, collision = false, aoe = true, type = Skills.SkillE.type })
+  UPL:AddSpell(_R, { speed = Skills.SkillR.speed, delay = Skills.SkillR.delay, range = Skills.SkillR.range, width = Skills.SkillR.width, collision = false, aoe = false })
+end
+-- Skill Data
+
 -- Prediction Stuff
-function Vpredck()
-    if FileExist(Vpred_PATH) then
-        print("<b><font color=\"#6699FF\">VPrediction:</font> <font color=\"#FFFFFF\"> Loading!</b></font>")
-        require("VPrediction")
-        VP = VPrediction()
+function UPLck()
+    if FileExist(UPL_PATH) then
+        print("<b><font color=\"#6699FF\">UPL:</font> <font color=\"#FFFFFF\"> Loading!</b></font>")
+        require("UPL")
+        UPL = UPL()
         predwillwork = true
         return
-      elseif not FileExist(Vpred_PATH) then
+      elseif not FileExist(UPL_PATH) then
         predwillwork = false
-        print("<b><font color=\"#FF000\">Downloading Vprediction. Dont press 2xF9! Please wait!</b></font>")
-        DownloadFile(Vpred_URL, Vpred_PATH,function() AutoupdaterMsg("<b><font color=\"#FF0000\">Vpred downloaded, please reload (2xF9)</b></font>") end)
+        print("<b><font color=\"#FF000\">Downloading UPL. Dont press 2xF9! Please wait!</b></font>")
+        DownloadFile(UPL_URL, UPL_PATH,function() AutoupdaterMsg("<b><font color=\"#FF0000\">UPL downloaded, please reload (2xF9).</b></font>") end)
       end
-end
-function Dpredck()
-  if FileExist(Dpred_PATH) then
-    print("<b><font color=\"#9966CC\">[DivinePrediction]</font> Loading!</b></font>")
-    print("<b><font color=\"#9966CC\">[DivinePrediction]</font> Remember: This is a paid prediction!</b></font>")
-    print("<b><font color=\"#9966CC\">[DivinePrediction]</font> You must have bought it in order to use!</b></font>")
-    require("DivinePred")
-    DP = DivinePred()
-    predwillwork = true
-    return
-  elseif not FileExist(Dpred_PATH) then
-    predwillwork = false
-    print("<b><font color=\"#FF0000\">You need to download DivinePred manually!")
-    print("<b><font color=\"#FF0000\">Remember: This is a paid prediction!</b></font>")
-    print("<b><font color=\"#FF0000\">You must have bought it in order to use!</b></font>")
-    return
-  end
 end
 function CastQ()
 if QREADY and ValidTarget(Target) then
-  if themenu.predtouse == 1 then
-    local CastPosition, HitChance, Enemies = VP:GetCircularAOECastPosition(Target, Skills.SkillQ.delay, Skills.SkillQ.width, Skills.SkillQ.range, Skills.SkillQ.speed, myHero)
-    if HitChance >= 2 and Enemies >= 1 then
+    local CastPosition, HitChance, HeroPosition = UPL:Predict(_Q, myHero, Target)
+    if HitChance >= 2 then
           CastSpell(_Q, CastPosition.x, CastPosition.z)
-          --print("Casting Q with Vpred")
     end    
-  elseif themenu.predtouse == 2 then
-    local ssq = CircleSS(Skills.SkillQ.speed, Skills.SkillQ.range, Skills.SkillQ.width, (Skills.SkillQ.delay * 1000), math.ruge, 1)
-    local ssq = DP:bindSS(Skills.SkillQ.name, ssq, 75)
-    local status, hitPos, perc = DP:predict(Skills.SkillQ.name, Target)
-    if status == SkillShot.STATUS.SUCCESS_HIT then
-        CastSpell(_Q, hitPos.x, hitPos.z)
-        --print("Casting Q with Dpred")
-    end
-  end
 end
 end
 function CastE()
 if EREADY and ValidTarget(Target) then
-  if themenu.predtouse == 1 then
-    local CastPosition, HitChance, Enemies = VP:GetCircularAOECastPosition(Target, Skills.SkillE.delay, Skills.SkillE.width, Skills.SkillE.range, Skills.SkillE.speed, myHero)
-    if HitChance >= 2 and Enemies >= 1 then
+    local CastPosition, HitChance, HeroPosition = UPL:Predict(_E, myHero, Target)
+    if HitChance >= 2 then
           CastSpell(_E, CastPosition.x, CastPosition.z)
-          --print("Casting E with Vpred")
     end    
-  elseif themenu.predtouse == 2 then
-    local sse = CircleSS(Skills.SkillE.speed, Skills.SkillE.range, Skills.SkillE.width, (Skills.SkillE.delay * 1000), math.ruge, 1)
-    local sse = DP:bindSS(Skills.SkillE.name, sse, 75)
-    local status, hitPos, perc = DP:predict(Skills.SkillE.name, Target)
-    if status == SkillShot.STATUS.SUCCESS_HIT then
-        CastSpell(_E, hitPos.x, hitPos.z)
-        --print("Casting E with Dpred")
-    end
-  end
 end
 end
 function LoadPred()
-  if themenu.predtouse == 1 then
-    Vpredck()
-  elseif themenu.predtouse == 2 then
-    Dpredck()
-  end
+  UPLck()
 end
 -- Prediction Stuff
 
@@ -619,23 +586,16 @@ function OpenMenu()
         themenu.ads.lvlspl:addParam("", "", SCRIPT_PARAM_INFO, "")
         themenu.ads.lvlspl:addParam("sep3", "To load the Script, ", SCRIPT_PARAM_INFO, "")
         themenu.ads.lvlspl:addParam("start", "Just Press Key ", SCRIPT_PARAM_ONKEYDOWN, false, 76)
-      themenu.ads:addSubMenu("Skin Hack", "sh")
+      --[[themenu.ads:addSubMenu("Skin Hack", "sh")
         themenu.ads.sh:addParam("SkinHack","Use Skin Hack", SCRIPT_PARAM_ONOFF, false)
         themenu.ads.sh:addParam("skin", "Select the skin:", SCRIPT_PARAM_LIST, 1, { "Classic", "Goth Annie", "Red Riding Annie", "Annie in Wonderland", "Prom Queen Annie", "Frostfire Annie", "Reverse Annie", "Franken Tibbers Annie", "Panda Annie"})
-      
+      --]]
   -- Orbwalker
     themenu:addSubMenu("Orbwalker","obwc")
 
   -- Prediction for the spells
-    themenu:addParam("predtouse","Prediction to use:", SCRIPT_PARAM_LIST, 1, {'VPrediction', 'DivinePred'})
-    themenu:setCallback("predtouse",
-      function(v)
-        if v == 1 then
-          Vpredck()  
-        elseif v == 2 then
-          Dpredck()  
-        end
-      end)
+    themenu:addSubMenu("Prediction Menu", "predtouse")
+    UPL:AddToMenu(themenu.predtouse)
   
 
   -- Info
