@@ -20,11 +20,10 @@
             • Ward assistant            [ ]
             • KS                        [ ]
             • Mana Management           [X]
-            • UPL                       [X]
 --]]
 -- Those stuff to be called on the whole script
 local myHero = GetMyHero()
-local version = "2.00"
+local version = "2.01"
 local obw_URL = "https://raw.githubusercontent.com/Superx321/BoL/master/common/SxOrbWalk.lua"
 local UPL_URL = "https://raw.github.com/nebelwolfi/BoL/master/Common/UPL.lua"
 local obw_PATH = LIB_PATH.."SxOrbwalk.lua"
@@ -182,9 +181,7 @@ end
 -- Skill Data
 function SkillData()
   UPL:AddSpell(_Q, { speed = Skills.SkillQ.speed, delay = Skills.SkillQ.delay, range = Skills.SkillQ.range, width = Skills.SkillQ.width, collision = false, aoe = true, type = Skills.SkillQ.type })
-  UPL:AddSpell(_W, { speed = Skills.SkillW.speed, delay = Skills.SkillW.delay, range = Skills.SkillW.range, width = Skills.SkillW.width, collision = false, aoe = false })
   UPL:AddSpell(_E, { speed = Skills.SkillE.speed, delay = Skills.SkillE.delay, range = Skills.SkillE.range, width = Skills.SkillE.width, collision = false, aoe = true, type = Skills.SkillE.type })
-  UPL:AddSpell(_R, { speed = Skills.SkillR.speed, delay = Skills.SkillR.delay, range = Skills.SkillR.range, width = Skills.SkillR.width, collision = false, aoe = false })
 end
 -- Skill Data
 
@@ -347,13 +344,9 @@ end
 function HealAlly()
   for _, ally in ipairs(GetAllyHeroes()) do  
     if WREADY and not InFountain() and themenu.heal1[ally.charName] then
-      if (ally.health / ally.maxHealth < themenu.heal1[ally.charName.."2"] /100) and (myHero.health / myHero.maxHealth > themenu.heal1.sorakashp /100) then
+      if (ally.health / ally.maxHealth < themenu.heal1[ally.charName.."2"] /100) --[[and (myHero.health / myHero.maxHealth > themenu.heal1.sorakashp /100)]] then
         if GetDistance(ally, myHero) <= Skills.SkillW.range then
-         -- if VIP_USER and themenu.ads.packets then
-          --  Packet("S_CAST", {spellId = _W, targetNetworkId = ally.networkID}):send()
-          --else
             CastSpell(_W, ally)
-          --end
         end
       end
     end
@@ -361,13 +354,9 @@ function HealAlly()
 end
 function UltAlly()
   for _, ally in ipairs(GetAllyHeroes()) do  
-    if RREADY and themenu.heal2[ally.charName] then
-      if (ally.health / ally.maxHealth < themenu.heal2[ally.charName.."2"] /100) then
-          --if VIP_USER and themenu.ads.packets then
-          --  Packet("S_CAST", {spellId = _R, targetNetworkId = ally.networkID}):send()
-          --else
+    if RREADY and themenu.heal2[ally.charName.."ult"] then
+      if (ally.health / ally.maxHealth < themenu.heal2[ally.charName.."ult2"] /100) then
             CastSpell(_R, ally)
-          --end
       end
     end
   end
@@ -378,7 +367,7 @@ function UltSelf()
       --if VIP_USER and themenu.ads.packets then
       --  Packet("S_CAST", {spellId = _R, targetNetworkId = myHero.networkID}):send()
       --else
-        CastSpell(_R)
+        CastSpell(_R, ally)
       --end
     end
   end
@@ -544,7 +533,7 @@ function OpenMenu()
   
   -- Heal W
     themenu:addSubMenu("Heal W","heal1") 
-      themenu.heal1:addParam("wglobal", "Global Config ON/OFF", SCRIPT_PARAM_ONOFF, false)
+      --themenu.heal1:addParam("wglobal", "Global Config ON/OFF", SCRIPT_PARAM_ONOFF, false)
       for _, ally in ipairs(GetAllyHeroes()) do
         themenu.heal1:addParam(tostring(ally.charName), "Heal "..tostring(ally.charName).." ON/OFF", SCRIPT_PARAM_ONOFF, true)
       end
@@ -557,9 +546,11 @@ function OpenMenu()
   -- Heal R
     themenu:addSubMenu("Heal R","heal2")
     for _, ally in ipairs(GetAllyHeroes()) do
-      themenu.heal2:addParam(tostring(ally.charName).."ult", "Ult "..tostring(ally.charName).." ON/OFF", SCRIPT_PARAM_ONOFF, true) end
+      themenu.heal2:addParam(tostring(ally.charName).."ult", "Ult "..tostring(ally.charName).." ON/OFF", SCRIPT_PARAM_ONOFF, true)
+    end
     for _, ally in ipairs(GetAllyHeroes()) do
-      themenu.heal2:addParam(tostring(ally.charName).."ult2", "Ult "..tostring(ally.charName).."<= %HP", SCRIPT_PARAM_SLICE, 80, 1, 100, 0) end
+      themenu.heal2:addParam(tostring(ally.charName).."ult2", "Ult "..tostring(ally.charName).."<= %HP", SCRIPT_PARAM_SLICE, 20, 1, 100, 0)
+    end
       themenu.heal2:addParam("selfult", "Ult on yourself ON/OFF", SCRIPT_PARAM_ONOFF, true)
       themenu.heal2:addParam("selfult2", "Ult on yourself <= %HP", SCRIPT_PARAM_SLICE, 20, 1, 100, 0)
   
