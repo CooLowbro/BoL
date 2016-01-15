@@ -212,19 +212,19 @@ end end
 
 _G.LevelSpell = function(id)
   local offsets = { 
-    [_Q] = 0x1E,
-    [_W] = 0xD3,
-    [_E] = 0x3A,
-    [_R] = 0xA8,
+    [_Q] = 0x71,
+    [_W] = 0xF1,
+    [_E] = 0x31,
+    [_R] = 0xB1,
   }
-  local p = CLoLPacket(0x00B6)
-  p.vTable = 0xFE3124
+  local p = CLoLPacket(0x00DB)
+  p.vTable = 0xF6D830
   p:EncodeF(myHero.networkID)
-  p:Encode1(0xC1)
-  p:Encode1(offsets[id])
-  for i = 1, 4 do p:Encode1(0x63) end
-  for i = 1, 4 do p:Encode1(0xC5) end
+  for i = 1, 4 do p:Encode1(0x30) end
+  p:Encode1(0x17)
+  for i = 1, 4 do p:Encode1(0x81) end
   for i = 1, 4 do p:Encode1(0x6A) end
+  p:Encode1(offsets[id])
   for i = 1, 4 do p:Encode1(0x00) end
   SendPacket(p)
 end
